@@ -1,12 +1,18 @@
 import React from 'react';
 import autobind from 'autobind-decorator'
-import { StyleSheet, Text, View, Image, TextInput, Button, Alert, FlatList, Fetch } from 'react-native';
+import { StyleSheet, Text, View, Image, TextInput, Button, Alert, FlatList, Fetch, TouchableOpacity, Picker } from 'react-native';
+import { StackNavigator } from 'react-navigation';
 
-export default class App extends React.Component {
-	
+class HomeScreen extends React.Component {
+
+  static navigationOptions = {
+    title: 'TF2Logs',
+
+  };
+
   constructor(props) {
-  	super(props);
-  	this.state = {
+    super(props);
+    this.state = {
       player: '',
       matches: [{id: '123', title: 'poopybutthole'}],
     };
@@ -36,57 +42,108 @@ export default class App extends React.Component {
         console.error(error);
       });
   }
-	
+  
   render() {
-	
-	
+  
+  
     return (
-	<View style={{flex: 1, backgroundColor: 'powderblue'}}>
-	  
-	  <View style={{marginTop: 60,margin: 40, padding: 10, flex: 1}}>
-        <TextInput
-          style={{height: 40, color: 'black'}}
-          textAlign="center"
-          placeholder="Enter Steam ID Number"
-          placeholderTextColor="black"
-          onChangeText={(text) => this.setState({'player':text})}
-        />
+      <View style={{flex: 1, backgroundColor: 'powderblue'}}>
         
-        <Button 
-        onPress={this._onPressButton}
-        title="SEARCH"
-        />
-    </View>
+        <View style={{marginTop: 60,margin: 40, padding: 10, flex: 1}}>
+            <TextInput
+              style={{height: 40, color: 'black'}}
+              textAlign="center"
+              placeholder="Enter Steam ID Number"
+              placeholderTextColor="black"
+              onChangeText={(text) => this.setState({'player':text})}
+            />
+            
+            <Button 
+            onPress={this._onPressButton}
+            title="SEARCH"
+            />
+        </View>
 
 
-    <View style={{flex: 8}}>
-     <MatchList
-          data= {
-            this.state.matches
-          }
-          />
-	  </View>
-	 </View>
-	)
+        <View style={{flex: 8}}>
+         <MatchList
+              data= {
+                this.state.matches
+              }
+              />
+        </View>
+       </View>
+  )
   }
 };
+
+class MatchScreen extends React.Component {
+
+  static navigationOptions = {
+    title: 'Match',
+
+  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      id: '',
+      score: [{red: '0', blue: '0'}],
+    };
+  }
+
+  fetchStats() {
+    return fetch('https://logs.tf/json/'  + (id? id.toString():'1486609'))
+      .then((response) => response.json())
+      .then((responseJson) => {
+        this.setState({
+          //add logs to the list
+          score: responseJson.teams
+        }, function() {
+          //something to do w new states
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+
+  render(){
+
+    //const { navigate } = this.props.navigation;
+
+    return(
+
+      <View style={{backgroundColor: 'white'}}>
+        <Text>SCORE GOES HERE</Text>
+      </View>
+    )
+
+  }
+
+}
 
 class MatchListItem extends React.PureComponent {
   _onPress = () => {
     this.props.onPressItem(this.props.id);
+    console.log('match selected');
+    navigate('MatchScreen');
   };
+  
 
   render() {
+    //const { navigate } = this.props.navigation;
     return (
-
-      <View style={styles.logItem}>
-        <Text style={styles.logItemText}>
-        {this.props.id}
-        </Text>
-        <Text style={styles.logItemText}>
-        {this.props.title}
-        </Text>
-      </View>
+      <TouchableOpacity onPress={() => this.props.navigation('MatchScreen')}>
+        <View style={styles.logItem}>
+          <Text style={styles.logItemText}>
+          {this.props.id}
+          </Text>
+          <Text style={styles.logItemText}>
+          {this.props.title}
+          </Text>
+        </View>
+      </TouchableOpacity>
     )
   }
 }
@@ -97,12 +154,14 @@ class MatchList extends React.PureComponent {
   _keyExtractor = (item, index) => item.id;
 
   _onPressItem = (id: string) => {
+    
     // updater functions are preferred for transactional updates
     this.setState((state) => {
       // copy the map rather than modifying state.
       const selected = new Map(state.selected);
       selected.set(id, !selected.get(id)); // toggle
       return {selected};
+
     });
   };
 
@@ -127,6 +186,7 @@ class MatchList extends React.PureComponent {
   }
 }
 
+
 const styles = StyleSheet.create({
 
   logItem: {
@@ -143,3 +203,12 @@ const styles = StyleSheet.create({
   }
 
 });
+
+const App = StackNavigator({
+
+    Home: { screen: HomeScreen },
+    Match: { screen: MatchScreen },
+
+});
+
+export default App;
