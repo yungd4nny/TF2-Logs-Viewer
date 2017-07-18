@@ -42,6 +42,13 @@ class HomeScreen extends React.Component {
         console.error(error);
       });
   }
+
+  @autobind
+  navToMatchScreen(matchInfo){
+    console.log('poopybutthole')
+    const { navigate } = this.props.navigation;
+    navigate('Match', matchInfo)
+  }
   
   render() {
   
@@ -67,10 +74,9 @@ class HomeScreen extends React.Component {
 
         <View style={{flex: 8}}>
          <MatchList
-              data= {
-                this.state.matches
-              }
-              />
+            data= {this.state.matches}
+            onPressItem= {this.navToMatchScreen}
+          />
         </View>
        </View>
   )
@@ -124,17 +130,20 @@ class MatchScreen extends React.Component {
 }
 
 class MatchListItem extends React.PureComponent {
+
+  
+
   _onPress = () => {
-    this.props.onPressItem(this.props.id);
+    //navigate('Match');
+    this.props.onPressItem({id:this.props.id});
     console.log('match selected');
-    navigate('MatchScreen');
   };
   
 
   render() {
     //const { navigate } = this.props.navigation;
     return (
-      <TouchableOpacity onPress={() => this.props.navigation('MatchScreen')}>
+      <TouchableOpacity onPress={this._onPress}>
         <View style={styles.logItem}>
           <Text style={styles.logItemText}>
           {this.props.id}
@@ -153,16 +162,10 @@ class MatchList extends React.PureComponent {
 
   _keyExtractor = (item, index) => item.id;
 
-  _onPressItem = (id: string) => {
+  _onPressItem = (matchItem) => {
     
-    // updater functions are preferred for transactional updates
-    this.setState((state) => {
-      // copy the map rather than modifying state.
-      const selected = new Map(state.selected);
-      selected.set(id, !selected.get(id)); // toggle
-      return {selected};
-
-    });
+    this.props.onPressItem(matchItem);
+    console.log('match list recieved touch');
   };
 
   _renderItem = ({item}) => (
