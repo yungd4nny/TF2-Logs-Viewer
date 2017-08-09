@@ -93,20 +93,29 @@ class MatchScreen extends React.Component {
     super(props);
     this.state = {
       id: '',
-      score: [{red: '0', blue: '0'}],
+      score: {red: '0', blu: '0'},
     };
   }
 
+  componentDidMount(){
+    this.fetchStats();
+  }
+
   fetchStats() {
-    return fetch('https://logs.tf/json/'  + (id? id.toString():'1486609'))
+    return fetch('https://logs.tf/json/'  + (this.state.id? this.state.id.toString():'1486609'))
       .then((response) => response.json())
       .then((responseJson) => {
         this.setState({
           //add logs to the list
-          score: responseJson.teams
+          score: {
+              red: responseJson.teams.Red.score,
+              blu: responseJson.teams.Blue.score
+            },
+          
         }, function() {
           //something to do w new states
         });
+        console.log(responseJson);
       })
       .catch((error) => {
         console.error(error);
@@ -121,7 +130,7 @@ class MatchScreen extends React.Component {
     return(
 
       <View style={{backgroundColor: 'white'}}>
-        <Text>SCORE GOES HERE</Text>
+        <Text style={{textAlign: 'center'}}>{this.state.score.red} {this.state.score.blu}</Text>
       </View>
     )
 
