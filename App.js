@@ -28,7 +28,7 @@ class HomeScreen extends React.Component {
   /** Fetches the list of matches from logs.tf and stores it in the matches state
   */
   fetchStats(player) {
-    return fetch('https://logs.tf/json_search?player='  + (player? player.toString():'76561198043059628'))
+    fetch('https://logs.tf/json_search?player='  + (player? player.toString():'76561198043059628'))
       .then((response) => response.json())
       .then((responseJson) => {
         this.setState({
@@ -45,7 +45,7 @@ class HomeScreen extends React.Component {
 
   @autobind
   navToMatchScreen(matchInfo){
-    console.log('poopybutthole')
+    console.log(matchInfo)
     const { navigate } = this.props.navigation;
     navigate('Match', matchInfo)
   }
@@ -93,29 +93,47 @@ class MatchScreen extends React.Component {
     super(props);
     this.state = {
       id: '',
-      score: {red: '0', blu: '0'},
+      score: {red: '0', blue: '0'},
+      kills: {red: '0', blue: '0'},
+      dmg: {red: '0', blue: '0'},
     };
+    this.fetchStats = this.fetchStats.bind(this);
   }
 
   componentDidMount(){
     this.fetchStats();
+    const { params } = this.props.navigation.state;
+    this.setState({
+    	id: params.id,
+    });
   }
 
+  
   fetchStats() {
-    return fetch('https://logs.tf/json/'  + (this.state.id? this.state.id.toString():'1486609'))
+  	const { params } = this.props.navigation.state;
+  	//self=this;
+    fetch('https://logs.tf/json/'  + (params.id? params.id.toString():'1486609'))
       .then((response) => response.json())
       .then((responseJson) => {
         this.setState({
           //add logs to the list
           score: {
               red: responseJson.teams.Red.score,
-              blu: responseJson.teams.Blue.score
+              blue: responseJson.teams.Blue.score,
             },
+          kills: {
+          		red: responseJson.teams.Red.kills,
+          		blue: responseJson.teams.Blue.kills,
+          	},
+          dmg: {
+          		red: responseJson.teams.Red.dmg,
+          		blue: responseJson.teams.Blue.dmg,
+          	}
           
         }, function() {
           //something to do w new states
         });
-        console.log(responseJson);
+        //console.log(responseJson);
       })
       .catch((error) => {
         console.error(error);
@@ -128,10 +146,55 @@ class MatchScreen extends React.Component {
     //const { navigate } = this.props.navigation;
 
     return(
+	    <View>
+	      <View style={{backgroundColor: 'white', flexDirection: 'row'}}>
+	      	<View style={{flex: 2, backgroundColor: 'red'}}>
+	        	<Text style={{textAlign: 'center', fontSize: 60}}>{this.state.score.red}</Text>
+	        </View>
+	        <View style={{flex: 2, backgroundColor: 'blue'}}>
+	        	<Text style={{textAlign: 'center', fontSize: 60}}>{this.state.score.blue}</Text>
+	        </View>
+	      </View>
 
-      <View style={{backgroundColor: 'white'}}>
-        <Text style={{textAlign: 'center'}}>{this.state.score.red} {this.state.score.blu}</Text>
-      </View>
+	      <View style={{backgroundColor: 'white', flex: 1}}>
+
+	      </View>
+
+	      <View style={{flexDirection: 'row'}}>
+		      <View style={{flex: 2, backgroundColor: 'red'}}>
+		        	<Text style={{textAlign: 'left', fontSize: 20}}>Kills: {this.state.kills.red}</Text>
+		        	<Text style={{textAlign: 'left', fontSize: 20}}>Damage: {this.state.dmg.red}</Text>
+		        	<Image source={{uri: 'https://wiki.teamfortress.com/w/images/a/ad/Leaderboard_class_scout.png'}}
+       					style={{width: 30, height: 30}} />
+		        	<Image source={{uri: 'https://wiki.teamfortress.com/w/images/a/ad/Leaderboard_class_scout.png'}}
+       					style={{width: 30, height: 30}} />
+       				<Image source={{uri: 'https://wiki.teamfortress.com/w/images/9/96/Leaderboard_class_soldier.png'}}
+       					style={{width: 30, height: 30}} />
+		        	<Image source={{uri: 'https://wiki.teamfortress.com/w/images/9/96/Leaderboard_class_soldier.png'}}
+       					style={{width: 30, height: 30}} />
+       				<Image source={{uri: 'https://wiki.teamfortress.com/w/images/4/47/Leaderboard_class_demoman.png'}}
+       					style={{width: 30, height: 30}} />
+		        	<Image source={{uri: 'https://wiki.teamfortress.com/w/images/e/e5/Leaderboard_class_medic.png'}}
+       					style={{width: 30, height: 30}} />
+		      </View>
+		      <View style={{flex: 2, backgroundColor: 'blue'}}>
+		        	<Text style={{textAlign: 'right', fontSize: 20}}>Kills: {this.state.kills.blue}</Text>
+		        	<Text style={{textAlign: 'right', fontSize: 20}}>Damage: {this.state.dmg.blue}</Text>
+		        	<Image source={{uri: 'https://wiki.teamfortress.com/w/images/a/ad/Leaderboard_class_scout.png'}}
+       					style={{alignSelf: 'flex-end', width: 30, height: 30}} />
+       				<Image source={{uri: 'https://wiki.teamfortress.com/w/images/a/ad/Leaderboard_class_scout.png'}}
+       					style={{alignSelf: 'flex-end', width: 30, height: 30}} />
+       				<Image source={{uri: 'https://wiki.teamfortress.com/w/images/9/96/Leaderboard_class_soldier.png'}}
+       					style={{alignSelf: 'flex-end', width: 30, height: 30}} />
+       				<Image source={{uri: 'https://wiki.teamfortress.com/w/images/9/96/Leaderboard_class_soldier.png'}}
+       					style={{alignSelf: 'flex-end', width: 30, height: 30}} />
+       				<Image source={{uri: 'https://wiki.teamfortress.com/w/images/4/47/Leaderboard_class_demoman.png'}}
+       					style={{alignSelf: 'flex-end', width: 30, height: 30}} />
+       				<Image source={{uri: 'https://wiki.teamfortress.com/w/images/e/e5/Leaderboard_class_medic.png'}}
+       					style={{alignSelf: 'flex-end', width: 30, height: 30}} />
+		      </View>
+	      </View>
+	     </View>
     )
 
   }
